@@ -10,6 +10,7 @@ Looking for more Automation? https://www.camtehcs.com
 #>
 
 $currentPath=(Split-Path ((Get-Variable MyInvocation -Scope 0).Value).MyCommand.Path)
+$hostkey = '8e:20:fc:57:99:c1:0b:9c:42:b9:bb:3d:fd:a4:89:27'
 
 if (-Not(Test-Path $currentPath\hallpass)) { New-Item -ItemType Directory hallpass }
 if (-Not(Test-Path $currentPath\files)) { New-Item -ItemType Directory files }
@@ -49,17 +50,24 @@ if ($students.Count -ge 1) {
     #lets include photos if we can find them and they are the right size.
     if ($includeStudentPhotos) {
         if (Test-Path $studentPhotosFolder) {
-            $photos = Get-ChildItem -Path $studentPhotosFolder -Recurse -File -Filter "*.jpg" | Where-Object { $PSItem.Length -lt 150kb }
-            $photosGrouped = $photos | Group-Object -Property BaseName
-            $photosHashed = $photosGrouped | Group-Object -Property Name -AsHashTable
 
-            $studentIds | ForEach-Object {
-                if ($photosHashed."$PSitem") {
-                    $photo = $photosHashed."$PSitem"
-                    $filesToZip.Add("$($photo.Group[0].FullName)") | Out-Null
+            if ((Get-Date -Format dddd) -eq 'Friday') {
+                $photos = Get-ChildItem -Path $studentPhotosFolder -Recurse -File -Filter "*.jpg" | Where-Object { $PSItem.Length -lt 150kb }
+                $photosGrouped = $photos | Group-Object -Property BaseName
+                $photosHashed = $photosGrouped | Group-Object -Property Name -AsHashTable
+
+                $studentIds | ForEach-Object {
+                    if ($photosHashed."$PSitem") {
+                        $photo = $photosHashed."$PSitem"
+                        $filesToZip.Add("$($photo.Group[0].FullName)") | Out-Null
+                    }
                 }
+            } else {
+                Write-Host "Info: HallPass only processes Student Photos on Fridays. We will not process all student photos."
             }
 
+        } else {
+            Write-Host "Error: Student Photos path has been specified but can not be found. Please check the path." -ForegroundColor Red
         }
     }
 
@@ -104,5 +112,12 @@ try {
 
 #Upload File
 if ($username -and $password) {
-    & "$currentPath\bin\pscp.exe" @('-pw',"$password",".\hallpass\$($filename)s.zip","$($username)@push.starthallpass.com:")
+    & "$currentPath\bin\pscp.exe" @('-pw',"$password",'-batch','-hostkey',"$hostkey",".\hallpass\$($filename)s.zip","$($username)@push.starthallpass.com:")
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Error: Failed to upload file." -ForegroundColor Red
+        exit 1
+    } else {
+        Write-Host "Info: Successfully uploaded zip file to HallPass."
+        exit 0
+    }
 }

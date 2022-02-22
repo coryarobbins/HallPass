@@ -6,6 +6,8 @@ This script does not do incremental uploads. It is a complete upload once a day.
 
 The final ZIP file will be named the same as the .ud authorization file you are provided by HallPass.  For student uploads it will have an 's' appended to the end.
 
+HallPass only allows 1 upload in a 24 hour period. Any attempts to upload a ZIP file again will fail. So choose your timing well.
+
 ## Suggested Install Process
 ````
 mkdir \scripts
@@ -28,7 +30,7 @@ Make sure that $validBuildings contains the exact name for the campuses you want
 The rest of the settings are up to you. Set them to $True or $False
 
 ## Student Photos
-Student photos are limited to 150kb in file size. Be good digital citizens, we don't need print quality photos for a thumbnail.
+Student photos are limited to 150kb in file size. Be good digital citizens, we don't need print quality photos for a thumbnail. HallPass only processes student photos on Fridays. The script will only include photos in the zip file on a Friday.
 
 ## Requirements
 - CognosDownloader installed using the suggested install process
