@@ -52,16 +52,26 @@ if ($students.Count -ge 1) {
         if (Test-Path $studentPhotosFolder) {
 
             if ((Get-Date -Format dddd) -eq 'Friday') {
+
+                $studentsWithPhotoIds = @()
+
                 $photos = Get-ChildItem -Path $studentPhotosFolder -Recurse -File -Filter "*.jpg" | Where-Object { $PSItem.Length -lt 150kb }
                 $photosGrouped = $photos | Group-Object -Property BaseName
                 $photosHashed = $photosGrouped | Group-Object -Property Name -AsHashTable
 
                 $studentIds | ForEach-Object {
                     if ($photosHashed."$PSitem") {
+                        $studentsWithPhotoIds += $PSitem
                         $photo = $photosHashed."$PSitem"
                         $filesToZip.Add("$($photo.Group[0].FullName)") | Out-Null
                     }
                 }
+
+                #now we need to mark the students as having a photo in the output CSV.
+                $students | Where-Object { $studentsWithPhotoIds -contains $PSItem.'student id' } | ForEach-Object {
+                    $PSItem.picture = 1
+                }
+
             } else {
                 Write-Host "Info: HallPass only processes Student Photos on Fridays. We will not process all student photos."
             }
