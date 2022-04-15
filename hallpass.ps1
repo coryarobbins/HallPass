@@ -24,7 +24,7 @@ if (-Not(Test-Path .\settings.ps1)) {
 
 $filesToZip = New-Object System.Collections.ArrayList
 
-if (-Not($authorizationFile = Get-ChildItem -Filter *.ud -Recurse -File)) {
+if (-Not($authorizationFile = Get-ChildItem -Path $currentPath -Filter *.ud -Recurse -File)) {
     Write-Host "Error: Authorization File not found in any directory here. Please save the .ud file provided by HallPass to this directory."
     exit 1
 } else {
@@ -51,29 +51,27 @@ if ($students.Count -ge 1) {
     if ($includeStudentPhotos) {
         if (Test-Path $studentPhotosFolder) {
 
-            if ((Get-Date -Format dddd) -eq 'Friday') {
+            $studentsWithPhotoIds = @()
 
-                $studentsWithPhotoIds = @()
+            $photos = Get-ChildItem -Path $studentPhotosFolder -Recurse -File -Filter "*.jpg" | Where-Object { $PSItem.Length -lt 150kb }
+            $photosGrouped = $photos | Group-Object -Property BaseName
+            $photosHashed = $photosGrouped | Group-Object -Property Name -AsHashTable
 
-                $photos = Get-ChildItem -Path $studentPhotosFolder -Recurse -File -Filter "*.jpg" | Where-Object { $PSItem.Length -lt 150kb }
-                $photosGrouped = $photos | Group-Object -Property BaseName
-                $photosHashed = $photosGrouped | Group-Object -Property Name -AsHashTable
-
-                $studentIds | ForEach-Object {
-                    if ($photosHashed."$PSitem") {
-                        $studentsWithPhotoIds += $PSitem
-                        $photo = $photosHashed."$PSitem"
+            $studentIds | ForEach-Object {
+                if ($photosHashed."$PSitem") {
+                    $studentsWithPhotoIds += $PSitem
+                    $photo = $photosHashed."$PSitem"
+                    
+                    #Hall Pass only accepts the student photo on Fridays. So we won't add them to the zip on other days.
+                    if ((Get-Date -Format dddd) -eq 'Friday') {
                         $filesToZip.Add("$($photo.Group[0].FullName)") | Out-Null
                     }
                 }
+            }
 
-                #now we need to mark the students as having a photo in the output CSV.
-                $students | Where-Object { $studentsWithPhotoIds -contains $PSItem.'student id' } | ForEach-Object {
-                    $PSItem.picture = 1
-                }
-
-            } else {
-                Write-Host "Info: HallPass only processes Student Photos on Fridays. We will not process all student photos."
+            #now we need to mark the students as having a photo in the output CSV.
+            $students | Where-Object { $studentsWithPhotoIds -contains $PSItem.'student id' } | ForEach-Object {
+                $PSItem.picture = 1
             }
 
         } else {
