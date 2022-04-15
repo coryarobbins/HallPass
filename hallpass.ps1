@@ -10,6 +10,8 @@ Looking for more Automation? https://www.camtehcs.com
 #>
 
 $currentPath=(Split-Path ((Get-Variable MyInvocation -Scope 0).Value).MyCommand.Path)
+Set-Location $currentPath
+
 $hostkey = '8e:20:fc:57:99:c1:0b:9c:42:b9:bb:3d:fd:a4:89:27'
 
 if (-Not(Test-Path $currentPath\hallpass)) { New-Item -ItemType Directory hallpass }
