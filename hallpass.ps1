@@ -17,11 +17,11 @@ $hostkey = '8e:20:fc:57:99:c1:0b:9c:42:b9:bb:3d:fd:a4:89:27'
 if (-Not(Test-Path $currentPath\hallpass)) { New-Item -ItemType Directory hallpass }
 if (-Not(Test-Path $currentPath\files)) { New-Item -ItemType Directory files }
 
-if (-Not(Test-Path .\settings.ps1)) {
+if (-Not(Test-Path $PSScriptRoot\settings.ps1)) {
     Write-Host "Error: Failed to find settings.ps1 file."    
     exit 1
 } else {
-    . .\settings.ps1
+    . $PSScriptRoot\settings.ps1
 }
 
 $filesToZip = New-Object System.Collections.ArrayList
@@ -33,12 +33,16 @@ if (-Not($authorizationFile = Get-ChildItem -Path $currentPath -Filter *.ud -Rec
     $fileName = $authorizationFile[0].baseName
     $authorizationFile = $authorizationFile[0].FullName
     $filesToZip.Add($authorizationFile) | Out-Null
-    $filesToZip.Add("files\config.ini") | Out-Null
+
+    #this is -ne $false for backwards compatibility with existing configs. If not defined then use the config.ini.
+    if ($eSchoolIsAuthoratative -ne $false) {
+        $filesToZip.Add("files\config.ini") | Out-Null
+    }
 }
 
-..\CognosDownload.ps1 -report students -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath .\files
+..\CognosDownload.ps1 -report students -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath $PSScriptRoot\files
 
-$students = Import-CSV .\files\students.csv | Where-Object { $validbuildings -contains $PSItem.'school id' }
+$students = Import-CSV $PSScriptRoot\files\students.csv | Where-Object { $validbuildings -contains $PSItem.'school id' }
 
 if ($removeHomeroomTeachers) {
     $students = $students | Select-Object -ExcludeProperty teacher | Select-Object *,teacher
@@ -82,7 +86,7 @@ if ($students.Count -ge 1) {
     }
 
     #No header file on the students.sd file.
-    $students | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path .\hallpass\students.sd -Force
+    $students | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path $PSScriptRoot\hallpass\students.sd -Force
     $filesToZip.Add("hallpass\students.sd") | Out-Null
 
     
@@ -92,10 +96,15 @@ if ($students.Count -ge 1) {
 }
 
 if ($includeGuardians) {
-    ..\CognosDownload.ps1 -report guardians -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath .\files
+
+    if ($IncludeAllContacts) {
+        ..\CognosDownload.ps1 -report allcontacts -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath $PSScriptRoot\files -Filename "guardians.csv"
+    } else {
+        ..\CognosDownload.ps1 -report guardians -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath $PSScriptRoot\files
+    }
 
     #pull in guardians for only valid students filtered out above
-    $guardians = Import-CSV .\files\guardians.csv | Where-Object { $studentIds -contains $PSItem.'student id' }
+    $guardians = Import-CSV $PSScriptRoot\files\guardians.csv | Where-Object { $studentIds -contains $PSItem.'student id' }
 
     if (-Not($includeGuardianPhoneNumbers)) {
         $guardians = $guardians | Select-Object -ExcludeProperty phone | Select-Object *,phone
@@ -104,7 +113,7 @@ if ($includeGuardians) {
     #There has to be valid data before we continue.
     if ($guardians.Count -ge 1) {
         #No header file on the students.sd file.
-        $guardians | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path .\hallpass\guardians.gd -Force
+        $guardians | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path $PSScriptRoot\hallpass\guardians.gd -Force
         $filesToZip.Add("hallpass\guardians.gd") | Out-Null
 
     } else {

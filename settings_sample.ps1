@@ -19,5 +19,11 @@ $studentPhotosFolder = "g:\Shared drives\LifeTouch\Combined\current\images"
 #Do you want to include guardians?
 $includeGuardians = $true
 
+#Do you want to include all contacts? This will include emergency contacts. Only downside is if no phone priority is defined on the record then a phone number is randomly chosen.
+$IncludeAllContacts = $false
+
 #Do you want to include Guardians Phone Numbers? Email Addresses will always be included.
 $includeGuardianPhoneNumbers = $true
+
+#Do you want eSchool to be the authoratative directory? Meaning when a student/contact/guardian is removed in eSchool they will also be disabled in HallPass?
+$eSchoolIsAuthoratative = $true
