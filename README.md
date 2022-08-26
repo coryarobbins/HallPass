@@ -33,6 +33,6 @@ The rest of the settings are up to you. Set them to $True or $False
 Student photos are limited to 150kb in file size. Be good digital citizens, we don't need print quality photos for a thumbnail. HallPass only processes student photos on Fridays. The script will only include photos in the zip file on a Friday.
 
 ## Requirements
-- CognosDownloader installed using the suggested install process
+- CognosModule
 - Git
 - Task Scheduler must run as the same user you used to save your eSchool/Cognos password.

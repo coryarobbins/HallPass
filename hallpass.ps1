@@ -40,7 +40,7 @@ if (-Not($authorizationFile = Get-ChildItem -Path $currentPath -Filter *.ud -Rec
     }
 }
 
-..\CognosDownload.ps1 -report students -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath $PSScriptRoot\files
+Save-CognosReport -report students -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
 
 $students = Import-CSV $PSScriptRoot\files\students.csv | Where-Object { $validbuildings -contains $PSItem.'school id' }
 
@@ -98,9 +98,9 @@ if ($students.Count -ge 1) {
 if ($includeGuardians) {
 
     if ($IncludeAllContacts) {
-        ..\CognosDownload.ps1 -report allcontacts -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath $PSScriptRoot\files -Filename "guardians.csv"
+        Save-CognosReport -report allcontacts -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files" -Filename "guardians.csv"
     } else {
-        ..\CognosDownload.ps1 -report guardians -teamcontent -cognosfolder "_Shared Data File Reports\HallPass" -savepath $PSScriptRoot\files
+        Save-CognosReport -report guardians -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
     }
 
     #pull in guardians for only valid students filtered out above
