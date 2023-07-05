@@ -48,6 +48,12 @@ if ($removeHomeroomTeachers) {
     $students = $students | Select-Object -ExcludeProperty teacher | Select-Object *,teacher
 }
 
+if ($studentRFID) {
+    $students | ForEach-Object {
+        $PSitem.rfid = "$($PSItem.'student id')-X3708"
+    }
+}
+
 #There has to be valid data before we continue.
 if ($students.Count -ge 1) {
 
@@ -129,9 +135,29 @@ try {
     exit 1
 }
 
+if ($IncludeFaculty) {
+    Save-CognosReport -report faculty -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
+    Save-CognosReport -report faculty_locations -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
+
+    $facultyLocations = Import-CSV $PSScriptRoot\files\faculty_locations.csv | Where-Object { $validbuildings -contains $PSItem.'school id' }
+    $validFacultyIds = $facultyLocations | Select-Object -ExpandProperty 'employee id'
+    $faculty = Import-CSV $PSScriptRoot\files\faculty.csv | Where-Object { $validFacultyIds -contains $PSItem.'employee id' }
+
+    $faculty | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path $PSScriptRoot\hallpass\faculty.fd -Force
+    $facultyLocations | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path $PSScriptRoot\hallpass\faculty.ld -Force
+
+    try {
+        Compress-Archive -Path ("hallpass\faculty.fd","hallpass\faculty.ld") -CompressionLevel Optimal -DestinationPath ".\hallpass\$($filename)f.zip" -Force
+    } catch {
+        Write-Host "Error: Failed to create ZIP file."
+        exit 1
+    }
+
+}
+
 #Upload File
 if ($username -and $password) {
-    & "$currentPath\bin\pscp.exe" @('-pw',"$password",'-batch','-hostkey',"$hostkey",".\hallpass\$($filename)s.zip","$($username)@push.starthallpass.com:")
+    & "$currentPath\bin\pscp.exe" @('-pw',"$password",'-batch','-hostkey',"$hostkey",".\hallpass\$($filename)*.zip","$($username)@push.starthallpass.com:")
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Error: Failed to upload file." -ForegroundColor Red
         exit 1

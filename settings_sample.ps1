@@ -27,3 +27,9 @@ $includeGuardianPhoneNumbers = $true
 
 #Do you want eSchool to be the authoratative directory? Meaning when a student/contact/guardian is removed in eSchool they will also be disabled in HallPass?
 $eSchoolIsAuthoratative = $true
+
+#Include Faculty?
+$IncludeFaculty = $false
+
+#RFID student ID numbers
+$studentRFID = $false
