@@ -1,11 +1,13 @@
 #Requires -Version 7.1
+#Requires -Modules CognosModule
 
 <#
 
-HallPass
-Craig Millsap - 2/2022
-Data Upload for students, photos, and guardians.
-Looking for more Automation? https://www.camtehcs.com
+    .SYNOPSIS
+    HallPass
+    Craig Millsap - 2/2022
+    Data Upload for students, photos, guardians, and faculty to HallPass.
+    Looking for more Automation? https://www.camtehcs.com
 
 #>
 
@@ -140,6 +142,13 @@ if ($IncludeFaculty) {
     Save-CognosReport -report faculty_locations -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
 
     $facultyLocations = Import-CSV $PSScriptRoot\files\faculty_locations.csv | Where-Object { $validbuildings -contains $PSItem.'school id' }
+
+    if ($facultyRFID) {
+        $facultyLocations | ForEach-Object {
+            $PSitem.rfid = "$($PSItem.'employee id')-X3708"
+        }
+    }
+
     $validFacultyIds = $facultyLocations | Select-Object -ExpandProperty 'employee id'
     $faculty = Import-CSV $PSScriptRoot\files\faculty.csv | Where-Object { $validFacultyIds -contains $PSItem.'employee id' }
 

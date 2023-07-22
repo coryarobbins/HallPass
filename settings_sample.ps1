@@ -33,3 +33,6 @@ $IncludeFaculty = $false
 
 #RFID student ID numbers
 $studentRFID = $false
+
+#RFID faculty ID numbers
+$facultyRFID = $True
