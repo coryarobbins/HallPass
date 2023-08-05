@@ -8,6 +8,14 @@ The final ZIP file will be named the same as the .ud authorization file you are 
 
 HallPass only allows 1 upload in a 24 hour period. Any attempts to upload a ZIP file again will fail. So choose your timing well.
 
+**DO NOT INSTALL THESE SCRIPTS TO A DOMAIN CONTROLLER.**
+
+Create a dedicated VM running Windows Server 2019 or Windows 10 Pro 1809+ for your automation scripts.
+
+## Requirements
+Git ````https://git-scm.com/download/win````
+
+Powershell 7 ````https://github.com/PowerShell/powershell/releases````
 ## Suggested Install Process
 ````
 mkdir \scripts
