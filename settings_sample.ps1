@@ -36,3 +36,6 @@ $studentRFID = $false
 
 #RFID faculty ID numbers
 $facultyRFID = $True
+
+#RFID ID numbers Assigned by HallPass
+$RFIDNumber = 'X3708'
