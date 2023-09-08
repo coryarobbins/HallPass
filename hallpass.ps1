@@ -52,7 +52,7 @@ if ($removeHomeroomTeachers) {
 
 if ($studentRFID) {
     $students | ForEach-Object {
-        $PSitem.rfid = "$($PSItem.'student id')-X3708"
+        $PSitem.rfid = "$($PSItem.'student id')-$RFIDNumber"
     }
 }
 
@@ -145,7 +145,7 @@ if ($IncludeFaculty) {
 
     if ($facultyRFID) {
         $facultyLocations | ForEach-Object {
-            $PSitem.rfid = "$($PSItem.'employee id')-X3708"
+            $PSitem.rfid = "$($PSItem.'employee id')-$RFIDNumber"
         }
     }
 
