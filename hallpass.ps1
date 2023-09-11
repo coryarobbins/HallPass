@@ -52,7 +52,7 @@ if ($removeHomeroomTeachers) {
 
 if ($studentRFID) {
     $students | ForEach-Object {
-        $PSitem.rfid = "$($PSItem.'student id')-X3708"
+        $PSitem.rfid = "$($PSItem.'student id')$($RFIDSuffix)"
     }
 }
 
@@ -105,6 +105,7 @@ if ($students.Count -ge 1) {
 
 if ($includeGuardians) {
 
+    #we save the file instead of Get-CognosReport in case the Cognos Report fails it would use the cached file.
     if ($IncludeAllContacts) {
         Save-CognosReport -report allcontacts -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files" -Filename "guardians.csv"
     } else {
@@ -116,6 +117,12 @@ if ($includeGuardians) {
 
     if (-Not($includeGuardianPhoneNumbers)) {
         $guardians = $guardians | Select-Object -ExcludeProperty phone | Select-Object *,phone
+    }
+
+    if ($IgnoreGuardianOrder) {
+        $guardians | ForEach-Object {
+            $PSitem.sortorder = 0
+        }
     }
     
     #There has to be valid data before we continue.
@@ -138,6 +145,12 @@ try {
 }
 
 if ($IncludeFaculty) {
+    # $schoolids = @{}
+    
+    # Get-CogSchool | ForEach-Object {
+    #     $schoolids.($PSitem.School_name) = [int]$PSItem.School_id
+    # }
+
     Save-CognosReport -report faculty -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
     Save-CognosReport -report faculty_locations -TeamContent -cognosfolder "_Shared Data File Reports\HallPass" -savepath "$PSScriptRoot\files"
 
@@ -145,7 +158,8 @@ if ($IncludeFaculty) {
 
     if ($facultyRFID) {
         $facultyLocations | ForEach-Object {
-            $PSitem.rfid = "$($PSItem.'employee id')-X3708"
+            $PSitem.'school id' = 0 #Per Nate at HallPass. #$schoolids.($PSItem.'school id')
+            $PSitem.rfid = "$($PSItem.'employee id')$($RFIDSuffix)"
         }
     }
 
@@ -156,7 +170,7 @@ if ($IncludeFaculty) {
     $facultyLocations | ConvertTo-CSV -Delimiter '|' -NoTypeInformation -UseQuotes AsNeeded | Select-Object -Skip 1 | Out-File -Path $PSScriptRoot\hallpass\faculty.ld -Force
 
     try {
-        Compress-Archive -Path ("hallpass\faculty.fd","hallpass\faculty.ld") -CompressionLevel Optimal -DestinationPath ".\hallpass\$($filename)f.zip" -Force
+        Compress-Archive -Path ($authorizationFile,"hallpass\faculty.fd","hallpass\faculty.ld") -CompressionLevel Optimal -DestinationPath ".\hallpass\$($filename)f.zip" -Force
     } catch {
         Write-Host "Error: Failed to create ZIP file."
         exit 1

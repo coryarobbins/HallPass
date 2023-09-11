@@ -22,6 +22,9 @@ $includeGuardians = $true
 #Do you want to include all contacts? This will include emergency contacts. Only downside is if no phone priority is defined on the record then a phone number is randomly chosen.
 $IncludeAllContacts = $false
 
+#IgnoreGuardianOrder - If you have more than 10 contacts/guardians HallPass will fail to import. You must then switch to using a wildcard of 0
+$IgnoreGuardianOrder = $false
+
 #Do you want to include Guardians Phone Numbers? Email Addresses will always be included.
 $includeGuardianPhoneNumbers = $true
 
@@ -36,3 +39,6 @@ $studentRFID = $false
 
 #RFID faculty ID numbers
 $facultyRFID = $True
+
+#RDID suffix - Each district has its own RFID suffix.
+$RFIDSuffix = "-1234"
